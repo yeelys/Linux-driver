@@ -1,0 +1,281 @@
+#if 1
+// #include "App_IRTI.h"
+// #include "../../../ChappieBsp/Chappie.h"
+
+// static std::string app_name = "IRTI";
+// static CHAPPIE* device;
+// #define _SCALE 9
+// #define MLX_H_Pixel 24
+// #define MLX_W_Pixel 32
+// #define Screen_H 280
+// #define Screen_W 240
+// #define MLX_MAX_Temp 300
+// #define MLX_MIN_Temp -20
+// #define abs(x)      ((x)>0?(x):-(x))
+// LV_IMG_DECLARE(ui_img_icon_IRTI_png);
+// //cfg define
+// static lv_timer_t* timer;
+// static float mlx90640To[768];  // 从MLX90640读取的温度数据
+// uint16_t mlx90640Frame[834];  // 从MLX90640读取的frame格式数据
+// static float mlx90640To_buffer[768];  // 缓存区域，复制MLX90640读取的温度数据并用于绘制热力图
+// static uint16_t heat_bitmap[32*_SCALE * 24*_SCALE] = {}; // rgb56556形式的内存，用于存储要渲染的图像
+// int R_colour, G_colour, B_colour;
+// bool MLX_isConnected=false,freeze=false,lock=false;
+// float T_max, T_min, T_avg; 
+// int max_x, max_y, min_x, min_y;
+// EmmaThermal::Thermal_Class::paramsMLX90640 mlx90640;
+
+// lv_obj_t * canvas;
+// namespace App {
+    
+
+
+// void create_canvas() {
+//     canvas = lv_canvas_create(lv_scr_act());
+//     lv_canvas_set_buffer(canvas, heat_bitmap, 32*_SCALE, 24*_SCALE, LV_IMG_CF_TRUE_COLOR);
+//     lv_obj_align(canvas, LV_ALIGN_CENTER, 0, 0);
+// }
+// //插值算法
+// float bilinear_interpolation(float x, float y, float *data, int width, int height) {
+//     int x1 = (int)x;
+//     int x2 = x1 + 1;
+//     int y1 = (int)y;
+//     int y2 = y1 + 1;
+
+//     if (x2 >= width) x2 = width - 1;
+//     if (y2 >= height) y2 = height - 1;
+
+//     float q11 = data[y1 * width + x1];
+//     float q12 = data[y2 * width + x1];
+//     float q21 = data[y1 * width + x2];
+//     float q22 = data[y2 * width + x2];
+
+//     float r1 = ((x2 - x) * q11 + (x - x1) * q21);
+//     float r2 = ((x2 - x) * q12 + (x - x1) * q22);
+//     float p = ((y2 - y) * r1 + (y - y1) * r2);
+
+//     return p;
+// }
+// // 伪彩色转换函数
+// lv_color_t GrayToPseColor(float temp) {
+//     // 假设温度范围的上下限为20到40摄氏度
+//     uint8_t colorR, colorG, colorB;
+//     // 将实际的温度数据转换为0~255之间的数值
+//     uint8_t grayValue = (uint8_t)(255 * (temp - MLX_MIN_Temp) / (MLX_MAX_Temp - MLX_MIN_Temp));
+//     // 使用转换后的数值代入伪彩编码计算函数，生成伪彩色
+//     colorR = abs(255 - grayValue);
+//     colorG = abs(127 - grayValue);
+//     colorB = abs(0 - grayValue);
+//     return lv_color_make(colorR, colorG, colorB);
+// }
+
+// //backup
+// // void update_canvas_with_mlx90640() {
+// //     float vdd = device->Thermal.MLX90640_GetVdd(mlx90640Frame, &mlx90640);
+// //     float Ta = device->Thermal.MLX90640_GetTa(mlx90640Frame, &mlx90640);
+// //     float tr = Ta - MLX_TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+// //     float emissivity = 0.95;
+
+// //     device->Thermal.MLX90640_GetFrameData(EMMA_Thermal_MLX_IIC_ADDR, mlx90640Frame);
+// //     device->Thermal.MLX90640_CalculateTo(mlx90640Frame, &mlx90640, emissivity, tr, mlx90640To);
+
+// //     for (int y = 0; y < MLX_H_Pixel; y++) {
+// //         for (int x = 0; x < MLX_W_Pixel; x++) {
+// //             float srcX = (float)x / Screen_W * 31;
+// //             float srcY = (float)y / Screen_H * 23;
+// //             float temp = bilinear_interpolation(srcX, srcY, mlx90640To, 32, 24);
+// //             lv_color_t color;
+
+// //             // 将温度映射到颜色（可以根据需要调整映射）
+// //             if (temp < 20.0) {
+// //                 color = lv_palette_main(LV_PALETTE_BLUE);
+// //             } else if (temp < 25.0) {
+// //                 color = lv_palette_main(LV_PALETTE_CYAN);
+// //             } else if (temp < 30.0) {
+// //                 color = lv_palette_main(LV_PALETTE_GREEN);
+// //             } else if (temp < 35.0) {
+// //                 color = lv_palette_main(LV_PALETTE_YELLOW);
+// //             } else {
+// //                 color = lv_palette_main(LV_PALETTE_RED);
+// //             }
+// //             lv_canvas_set_px(canvas, x, y, color);
+// //         }
+// //     }
+// // }
+
+//     /**
+//      * @brief Return the App name laucnher, which will be show on launcher App list
+//      * 
+//      * @return std::string 
+//      */
+//     std::string App_IRTI_appName()
+//     {
+//         return app_name;
+//     }
+
+
+//     /**
+//      * @brief Return the App Icon laucnher, NULL for default
+//      * 
+//      * @return void* 
+//      */
+//     void* App_IRTI_appIcon()
+//     {
+//         return (void*) &ui_img_icon_IRTI_png;
+//         // return NULL;
+//     }
+
+
+
+//     /**
+//      * @brief Called when App is on create
+//      * 
+//      */
+//     static void Task_Update_MLX(void * ptr)
+//     {
+        
+//         if (device->Thermal.isConnectd() == false){
+//             while (1){
+//                 IRTI_LOG("[IRTI]:MLX90640 not detected. Please check wiring. Freezing.");
+//                 vTaskDelay(1000);
+//             };
+//          }
+//          else{
+//             MLX_isConnected = true;
+//          }
+//         int status;
+//         uint16_t eeMLX90640[832];
+//         status = device->Thermal.MLX90640_DumpEE(EMMA_Thermal_MLX_IIC_ADDR,eeMLX90640);
+//         if (status != 0)
+//          IRTI_LOG("[IRTI]:Failed to load system parameters");
+//          status = device->Thermal.MLX90640_ExtractParameters(eeMLX90640, &mlx90640);
+//         if (status != 0)
+//         {
+//             IRTI_LOG("Parameter extraction failed");
+//             IRTI_LOG(" status = %d",status);
+//         }
+//         //Once params are extracted, we can release eeMLX90640 array
+//         device->Thermal.begin();
+//         //Set MLX90640 FreshRate mode
+//         device->Thermal.MLX90640_SetRefreshRate(EMMA_Thermal_MLX_IIC_ADDR,device->Thermal.R_MOD5);
+//         for(;MLX_isConnected==true;){
+//             lock = true;
+//             float vdd = device->Thermal.MLX90640_GetVdd(mlx90640Frame, &mlx90640);
+//             float Ta = device->Thermal.MLX90640_GetTa(mlx90640Frame, &mlx90640);
+//             float tr = Ta - MLX_TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+//             float emissivity = 0.95;
+//             device->Thermal.MLX90640_GetFrameData(EMMA_Thermal_MLX_IIC_ADDR, mlx90640Frame);
+//             device->Thermal.MLX90640_CalculateTo(mlx90640Frame, &mlx90640, emissivity, tr, mlx90640To);
+//             lock = false;
+//             T_min = mlx90640To[0];
+//             T_max = mlx90640To[0];
+//             T_avg = mlx90640To[0];
+//             for (int i = 1; i < 768; i++){ // 32*24 pixel
+//                 if((mlx90640To[i] > -41) && (mlx90640To[i] < 301))
+//                     {
+//                         if(mlx90640To[i] < T_min){
+//                             T_min = mlx90640To[i];
+//                         }
+//                         if(mlx90640To[i] > T_max){
+//                             T_max = mlx90640To[i];
+//                             max_x = i / 32;
+//                             max_y = i % 32;
+//                         }
+//                     }
+//                 else if(i > 0){   // temperature out of range
+//                         mlx90640To[i] = mlx90640To[i-1];
+//                 }
+//                 else{
+//                         mlx90640To[i] = mlx90640To[i+1];
+//                 }
+//                 T_avg = T_avg + mlx90640To[i];
+//             }
+//             vTaskDelay(5);
+//         }
+//         vTaskDelete(NULL); 
+//     }
+//     void draw_block_bitmap(int x, int y, int w, int max_x, int max_y, lv_color_t color){
+//         for(int i =y; i < y + w; i++){
+//                 for(int j = x; j < x + w; j++){
+//                 lv_canvas_set_px(canvas, x, y, color);
+//             }
+//         }
+//     }
+//     void update_bitmap(){
+//         for(int y=0; y<24; y++){ 
+//             for(int x=0; x<32; x++){
+//                 int id = (23-y) * 32 + x;
+//                 mlx90640To_buffer[id] = 180.0 * (mlx90640To_buffer[id] - T_min) / (T_max - T_min);
+//                 draw_block_bitmap(x*_SCALE, y*_SCALE, _SCALE, 32*_SCALE, 24*_SCALE, GrayToPseColor(mlx90640To_buffer[id]));
+//             } 
+//         }
+//     }
+//     static void Task_DrawBinMap(void * ptr)
+//     {
+//         while(1){
+//             if (!freeze){ // 如果画面被暂停会跳过这个热成像图的刷新
+//             // 只有画面更新才会绘制一张热成像图
+//             while(lock){
+//                 // 阻塞画面
+//                 vTaskDelay(1);
+//             }
+//             for (int i = 0; i < 768; i++) {mlx90640To_buffer[i] = mlx90640To[i];}  // 拷贝温度信息
+//             update_bitmap();
+//       }
+//         }
+//     }
+//     void App_IRTI_onCreate()
+//     {
+//         UI_LOG("[%s] onCreate\n", App_IRTI_appName().c_str());
+
+//         /*Create an Arc*/
+//         lv_obj_t * arc = lv_arc_create(lv_scr_act());
+//         lv_obj_set_size(arc, 150, 150);
+//         lv_arc_set_rotation(arc, 135);
+//         lv_arc_set_bg_angles(arc, 0, 270);
+//         lv_arc_set_value(arc, 40);
+//         lv_obj_center(arc);
+//         // device->
+//         // init canvas
+//         create_canvas();
+//         xTaskCreate(Task_Update_MLX, "MLX_Update", 1024 * 8, NULL, 1, NULL);
+//         xTaskCreate(Task_DrawBinMap, "IRTI_Draw", 1024 * 4, NULL, 5, NULL);
+
+//     }
+    
+
+//     /**
+//      * @brief Called repeatedly, end this function ASAP! or the App management will be affected
+//      * If the thing you want to do takes time, try create a taak or lvgl timer to handle them.
+//      * Try use millis() instead of delay() here
+//      * 
+//      */
+//     void App_IRTI_onLoop()
+//     {
+
+//     }
+
+
+//     /**
+//      * @brief Called when App is about to be destroy
+//      * Please remember to release the resourse like lvgl timers in this function
+//      * 
+//      */
+//     void App_IRTI_onDestroy()
+//     {
+//         UI_LOG("[%s] onDestroy\n", App_IRTI_appName().c_str());
+//     }
+
+
+//     /**
+//      * @brief Launcher will pass the BSP pointer through this function before onCreate
+//      * 
+//      */
+//     void App_IRTI_getBsp(void* bsp)
+//     {
+//         device = (CHAPPIE*)bsp;
+//     }
+    
+// }
+
+// #endif
